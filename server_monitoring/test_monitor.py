@@ -1,9 +1,17 @@
 import threading
 import time
+import logging
 
 from server_monitoring.stats_manager import StatsManager
 from server_monitoring.http_monitor import start_http_monitor
-from server_monitoring.udp_server import start_udp_server
+from server_monitoring.udp_stats_server import start_udp_server
+
+
+logging.basicConfig(
+    filename="server.log",
+    level=logging.INFO,
+    format="%(asctime)s - %(levelname)s - %(message)s",
+)
 
 
 def main():
