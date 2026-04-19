@@ -1,4 +1,4 @@
-from http.server import BaseHTTPRequestHandler, HTTPServer
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import json
 import logging
 
@@ -7,40 +7,33 @@ class StatsHandler(BaseHTTPRequestHandler):
     stats_manager = None
 
     def do_GET(self):
+        logging.info(f"HTTP request received: {self.path}")
+
         try:
-            logging.info(f"HTTP request received: {self.path}")
-
-            if self.path == "/stats":
-                if not self.stats_manager:
-                    raise Exception("Stats manager not initialized0")
-
-                response_data = self.stats_manager.get_stats()
-
-                self.send_response(200)
-                self.send_header("Content-Type", "application/json")
-                self.end_headers()
-                self.wfile.write(json.dumps(response_data, indent=4).encode("utf-8"))
-
-                logging.info("Returned /stats successfully (200)")
-
-            else:
+            if self.path != "/stats":
                 logging.warning(f"404 - Unknown HTTP endpoint requested: {self.path}")
+                self._send_json(404, {"error": "Endpoint not found"})
+                return
 
-                self.send_response(404)
-                self.send_header("Content-Type", "application/json")
-                self.end_headers()
-                self.wfile.write(
-                    json.dumps({"error": "Endpoint not found"}).encode("utf-8")
-                )
+            if self.stats_manager is None:
+                raise RuntimeError("Stats manager not initialized")
+
+            response_data = self.stats_manager.get_stats()
+            self._send_json(200, response_data)
+
+            logging.info("Returned /stats successfully (200)")
 
         except Exception as e:
-            logging.error(f"HTTP server error: {e}")
-            self.send_response(500)
-            self.send_header("Content-Type", "application/json")
-            self.end_headers()
-            self.wfile.write(
-                json.dumps({"error": "Internal server error"}).encode("utf-8")
-            )
+            logging.exception(f"HTTP server error: {e}")
+            self._send_json(500, {"error": "Internal server error"})
+
+    def _send_json(self, status_code, data):
+        body = json.dumps(data, indent=4).encode("utf-8")
+        self.send_response(status_code)
+        self.send_header("Content-Type", "application/json")
+        self.send_header("Content-Length", str(len(body)))
+        self.end_headers()
+        self.wfile.write(body)
 
     def log_message(self, format, *args):
         return
@@ -48,8 +41,7 @@ class StatsHandler(BaseHTTPRequestHandler):
 
 def start_http_monitor(stats_manager, host="127.0.0.1", port=8080):
     StatsHandler.stats_manager = stats_manager
-    server = HTTPServer((host, port), StatsHandler)
+    server = ThreadingHTTPServer((host, port), StatsHandler)
 
     logging.info(f"HTTP monitoring server running at http://{host}:{port}/stats")
-
     server.serve_forever()

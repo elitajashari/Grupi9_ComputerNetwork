@@ -42,12 +42,14 @@ class StatsManager:
         with self._lock:
             uptime_seconds = int((datetime.now() - self._start_time).total_seconds())
             active_clients = self.get_active_clients()
+            ip_addresses = sorted({client.split(":")[0] for client in active_clients})
 
             return {
                 "server_started_at": self._start_time.strftime("%Y-%m-%d %H:%M:%S"),
                 "uptime_seconds": uptime_seconds,
                 "active_clients_count": len(active_clients),
                 "active_clients": active_clients,
+                "ip_addresses": ip_addresses,
                 "total_messages": self._total_messages,
                 "recent_messages": list(self._recent_messages),
             }
