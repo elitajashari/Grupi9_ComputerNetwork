@@ -40,27 +40,27 @@ class UDPClient:
 # =========================
 class CommandParser:
     def parse(self, cmd: str):
+
         cmd = cmd.strip()
 
         if not cmd:
             return None
 
+        
         parts = cmd.split(maxsplit=1)
         base = parts[0]
 
-        # NO conversion to uppercase/lowercase — server expects exact format
-
+        
         if base == "/list":
             return "/list"
 
-        if base == "/info":
-            return "/info"
+   
+        if base in ["/read", "/upload", "/download", "/delete", "/search", "/info"]:
+            if len(parts) < 2 or not parts[1].strip():
+                return None  
+            return f"{base} {parts[1].strip()}"
 
-        if base in ["/read", "/upload", "/download", "/delete", "/search"]:
-            if len(parts) < 2:
-                return None
-            return f"{base} {parts[1]}"
-
+  
         return None
 
 
@@ -72,7 +72,7 @@ def main():
     parser = CommandParser()
 
     print("=== UDP CLIENT STARTED ===")
-    print("Connected to 127.0.0.1:9999\n")
+    print(f"Connected to {HOST}:{PORT}\n")
 
     print("Commands:")
     print("/list")
