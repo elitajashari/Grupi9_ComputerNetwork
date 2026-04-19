@@ -53,3 +53,6 @@ class StatsManager:
                 "total_messages": self._total_messages,
                 "recent_messages": list(self._recent_messages),
             }
+
+
+stats_manager = StatsManager()

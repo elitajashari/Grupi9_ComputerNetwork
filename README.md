@@ -5,7 +5,7 @@ Ky projekt implementon një sistem komunikimi Client-Server bazuar në protokoll
 
 ---
 
-## ⚙️ Si funksionon sistemi
+##  Si funksionon sistemi
 
 Sistemi operon përmes dy skedarëve kryesorë që bashkëveprojnë me njëri-tjetrin:
 
